@@ -1,0 +1,21 @@
+package com.ticketbook.order.controller;
+
+import com.ticketbook.order.dto.ErrorDetail;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+import static com.ticketbook.order.dto.ErrorDetail.buildExceptionResponse;
+
+@ControllerAdvice
+public class ExceptionController {
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ErrorDetail> handleInvalidInputException(
+      MethodArgumentNotValidException exception
+  ) {
+    return buildExceptionResponse(HttpStatus.BAD_REQUEST, exception);
+  }
+}
