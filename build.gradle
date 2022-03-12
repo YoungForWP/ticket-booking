@@ -25,9 +25,20 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'org.postgresql:postgresql:42.2.13'
     runtimeOnly 'com.h2database:h2'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'junit:junit:4.13.1'
 }
 
+bootRun {
+    def default_environment = [
+            "SPRING_PROFILES_ACTIVE": "local",
+    ]
+    environment = [:]
+    default_environment.each { name, defaultValue ->
+        def systemValue = System.getenv(name)
+        environment(name, systemValue != null ? systemValue : defaultValue)
+    }
+}
