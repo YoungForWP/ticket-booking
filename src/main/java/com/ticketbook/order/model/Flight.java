@@ -1,4 +1,4 @@
-package com.ticketbook.order.infrastructure.model;
+package com.ticketbook.order.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

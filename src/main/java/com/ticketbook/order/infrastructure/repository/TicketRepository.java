@@ -1,10 +1,9 @@
 package com.ticketbook.order.infrastructure.repository;
 
-import com.ticketbook.order.infrastructure.entity.TicketEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.ticketbook.order.model.Ticket;
 
-public interface TicketRepository extends JpaRepository<TicketEntity, String> {
+public interface TicketRepository {
 
-  TicketEntity getTicketById(String id);
+  Ticket getTicketById(String id);
 
 }

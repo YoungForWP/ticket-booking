@@ -2,7 +2,7 @@ package com.ticketbook.order.infrastructure.repository.helper;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ticketbook.order.infrastructure.model.Flight;
+import com.ticketbook.order.infrastructure.client.apimodel.FlightResponse;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.mockserver.integration.ClientAndServer;
@@ -35,7 +35,7 @@ public abstract class MockServerBase {
         response()
             .withHeaders(new Header(CONTENT_TYPE, APPLICATION_JSON.toString()))
             .withBody(objectMapper.writeValueAsString(
-                Flight.builder().id(flightId).finished(finished).build())
+                FlightResponse.builder().id(flightId).finished(finished).build())
             )
     );
   }

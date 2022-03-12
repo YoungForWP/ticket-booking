@@ -1,12 +1,11 @@
 package com.ticketbook.order.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.ticketbook.order.infrastructure.client.FlightClient;
-import com.ticketbook.order.infrastructure.entity.TicketEntity;
-import com.ticketbook.order.infrastructure.model.Flight;
+import com.ticketbook.order.infrastructure.client.FlightClientImpl;
 import com.ticketbook.order.infrastructure.repository.InvoiceRequestRepository;
 import com.ticketbook.order.infrastructure.repository.TicketRepository;
+import com.ticketbook.order.model.Flight;
 import com.ticketbook.order.model.InvoiceRequest;
+import com.ticketbook.order.model.Ticket;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +33,7 @@ public class OrderServiceTest {
   private InvoiceRequestRepository invoiceRequestRepository;
 
   @Mock
-  private FlightClient flightClient;
+  private FlightClientImpl flightClient;
 
   @Test
   public void requestInvoice_should_throw_exception_when_flight_is_not_finished() {
@@ -46,7 +45,7 @@ public class OrderServiceTest {
         .email("test@gmail.com")
         .build();
 
-    TicketEntity mockedTicket = TicketEntity.builder().id(ticketId).flightId(flightId).build();
+    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
     when(ticketRepository.getTicketById(ticketId)).thenReturn(mockedTicket);
     Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
     when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
@@ -69,7 +68,7 @@ public class OrderServiceTest {
         .email("test@gmail.com")
         .build();
 
-    TicketEntity mockedTicket = TicketEntity.builder().id(ticketId).flightId(flightId).build();
+    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
     when(ticketRepository.getTicketById(ticketId)).thenReturn(mockedTicket);
 
     Flight mockedFlight = Flight.builder().id(flightId).finished(true).build();

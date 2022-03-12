@@ -1,20 +1,20 @@
 package com.ticketbook.order.infrastructure.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.ticketbook.order.infrastructure.model.Flight;
+import com.ticketbook.order.model.Flight;
 import com.ticketbook.order.infrastructure.repository.helper.MockServerBase;
 import org.junit.Test;
 import org.springframework.web.client.RestTemplate;
 
 import static org.junit.Assert.assertEquals;
 
-public class FlightClientTest extends MockServerBase {
+public class FlightClientImplTest extends MockServerBase {
 
   private final String flightUrl = "http://localhost:1080";
 
   private final RestClient restClient = new RestClient(new RestTemplate());
 
-  private final FlightClient flightClient = new FlightClient(flightUrl, restClient);
+  private final FlightClientImpl flightClient = new FlightClientImpl(flightUrl, restClient);
 
   @Test
   public void getFlight_should_return_flight_info_when_get_flight() throws JsonProcessingException {

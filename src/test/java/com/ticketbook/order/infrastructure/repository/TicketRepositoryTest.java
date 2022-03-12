@@ -1,7 +1,7 @@
 package com.ticketbook.order.infrastructure.repository;
 
-import com.ticketbook.order.infrastructure.entity.TicketEntity;
 import com.ticketbook.order.infrastructure.repository.helper.DbBase;
+import com.ticketbook.order.model.Ticket;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +22,9 @@ public class TicketRepositoryTest extends DbBase {
   public void getTicketById_should_get_ticket_detail_by_id() {
     setupTicket();
 
-    TicketEntity ticket = ticketRepository.getTicketById("AH597C");
+    Ticket ticket = ticketRepository.getTicketById("AH597C");
 
-    TicketEntity expectedTicket = TicketEntity.builder().id("AH597C").flightId("6X5CAB").build();
+    Ticket expectedTicket = Ticket.builder().id("AH597C").flightId("6X5CAB").build();
     assertEquals(ticket, expectedTicket);
   }
 }

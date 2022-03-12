@@ -1,5 +1,6 @@
 package com.ticketbook.order.infrastructure.entity;
 
+import com.ticketbook.order.model.Ticket;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -32,4 +33,11 @@ public class TicketEntity {
   @JoinColumn(name = "order_id")
   private OrderEntity order;
 
+  public Ticket toModel() {
+    return Ticket.builder()
+        .id(this.getId())
+        .amount(this.getAmount())
+        .flightId(this.getFlightId())
+        .build();
+  }
 }
