@@ -22,16 +22,14 @@ public class InvoiceRequestRepositoryImplTest extends DbBase {
   @Test
   @Transactional
   public void save_should_save_request_invoice_into_db() {
-    UUID invoiceId = UUID.randomUUID();
 
     InvoiceRequest invoiceRequest = InvoiceRequest.builder()
-        .id(invoiceId)
         .ticketId("ABCD")
         .amount(BigDecimal.valueOf(1900))
         .email("test@gmail.com")
         .build();
 
-    invoiceRequestRepository.save(invoiceRequest);
+    UUID invoiceId = invoiceRequestRepository.save(invoiceRequest);
 
     InvoiceRequestEntity entity = entityManager.find(InvoiceRequestEntity.class, invoiceId);
     InvoiceRequestEntity expectedEntity = InvoiceRequestEntity.builder()

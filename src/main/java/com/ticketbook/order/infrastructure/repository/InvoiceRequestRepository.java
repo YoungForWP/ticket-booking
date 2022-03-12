@@ -2,8 +2,10 @@ package com.ticketbook.order.infrastructure.repository;
 
 import com.ticketbook.order.model.InvoiceRequest;
 
+import java.util.UUID;
+
 public interface InvoiceRequestRepository {
 
-   void save(InvoiceRequest invoiceRequest);
+   UUID save(InvoiceRequest invoiceRequest);
 
 }

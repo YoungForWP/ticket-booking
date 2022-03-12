@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
-
+import java.util.UUID;
 
 @Repository
 public class InvoiceRequestRepositoryImpl implements InvoiceRequestRepository {
@@ -15,8 +15,9 @@ public class InvoiceRequestRepositoryImpl implements InvoiceRequestRepository {
   private EntityManager entityManager;
 
   @Override
-  public void save(InvoiceRequest invoiceRequest) {
+  public UUID save(InvoiceRequest invoiceRequest) {
     InvoiceRequestEntity entity = InvoiceRequestEntity.fromModel(invoiceRequest);
     entityManager.persist(entity);
+    return entity.getId();
   }
 }

@@ -1,10 +1,9 @@
 package com.ticketbook.order.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ticketbook.order.dto.InvoiceRequestDTO;
+import com.ticketbook.order.dto.InvoiceRequestDto;
 import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.service.OrderService;
-import com.ticketbook.order.service.UuidService;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,8 +17,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.UUID;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.mockito.Mockito.when;
@@ -43,9 +40,6 @@ public class OrderControllerTest {
   @MockBean
   private OrderService orderService;
 
-  @MockBean
-  private UuidService uuidService;
-
   @Before
   public void setUp() {
     mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
@@ -53,7 +47,7 @@ public class OrderControllerTest {
 
   @Test
   public void requestInvoice_should_return_400_when_email_format_is_not_correct() throws Exception {
-    InvoiceRequestDTO request = InvoiceRequestDTO.builder().email("test email").build();
+    InvoiceRequestDto request = InvoiceRequestDto.builder().email("test email").build();
 
     mockMvc.perform(post("/orders/yl68q1/tickets/af12f6/invoice")
         .content(objectMapper.writeValueAsString(request))
@@ -64,7 +58,7 @@ public class OrderControllerTest {
 
   @Test
   public void requestInvoice_should_return_400_when_email_is_empty() throws Exception {
-    InvoiceRequestDTO request = InvoiceRequestDTO.builder().email("").build();
+    InvoiceRequestDto request = InvoiceRequestDto.builder().email("").build();
 
     mockMvc.perform(post("/orders/yl68q1/tickets/af12f6/invoice")
         .content(objectMapper.writeValueAsString(request))
@@ -75,7 +69,7 @@ public class OrderControllerTest {
 
   @Test
   public void requestInvoice_should_return_400_when_email_is_null() throws Exception {
-    InvoiceRequestDTO request = InvoiceRequestDTO.builder().build();
+    InvoiceRequestDto request = InvoiceRequestDto.builder().build();
 
     mockMvc.perform(post("/orders/yl68q1/tickets/af12f6/invoice")
         .content(objectMapper.writeValueAsString(request))
@@ -86,13 +80,9 @@ public class OrderControllerTest {
 
   @Test
   public void requestInvoice_should_return_400_flight_is_not_finished() throws Exception {
-    InvoiceRequestDTO request = InvoiceRequestDTO.builder().email("test@gmail.com").build();
-
-    UUID requestId = UUID.randomUUID();
-    when(uuidService.generateRandom()).thenReturn(requestId);
+    InvoiceRequestDto request = InvoiceRequestDto.builder().email("test@gmail.com").build();
 
     InvoiceRequest invoiceRequest = InvoiceRequest.builder()
-        .id(requestId)
         .orderId("AH597C")
         .ticketId("af12f6")
         .email("test@gmail.com")

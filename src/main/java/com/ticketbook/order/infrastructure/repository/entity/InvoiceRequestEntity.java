@@ -31,7 +31,7 @@ public class InvoiceRequestEntity {
 
   public static InvoiceRequestEntity fromModel(InvoiceRequest request) {
     return InvoiceRequestEntity.builder()
-        .id(request.getId())
+        .id(UUID.randomUUID())
         .ticketId(request.getTicketId())
         .email(request.getEmail())
         .amount(request.getAmount())

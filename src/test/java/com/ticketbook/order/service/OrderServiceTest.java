@@ -1,6 +1,8 @@
 package com.ticketbook.order.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ticketbook.order.infrastructure.client.FlightClientImpl;
+import com.ticketbook.order.infrastructure.client.SqsClientImpl;
 import com.ticketbook.order.infrastructure.repository.InvoiceRequestRepository;
 import com.ticketbook.order.infrastructure.repository.TicketRepository;
 import com.ticketbook.order.model.Flight;
@@ -11,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.UUID;
@@ -34,6 +35,9 @@ public class OrderServiceTest {
 
   @Mock
   private FlightClientImpl flightClient;
+
+  @Mock
+  private SqsClientImpl sqsClient;
 
   @Test
   public void requestInvoice_should_throw_exception_when_flight_is_not_finished() {
@@ -58,12 +62,11 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void requestInvoice_should_success_when_flight_is_finished() {
+  public void requestInvoice_should_success_when_flight_is_finished() throws JsonProcessingException {
     String flightId = "9A5F7B";
     String ticketId = "af12f6";
 
     InvoiceRequest invoiceRequest = InvoiceRequest.builder()
-        .id(UUID.randomUUID())
         .ticketId(ticketId)
         .email("test@gmail.com")
         .build();
@@ -74,8 +77,11 @@ public class OrderServiceTest {
     Flight mockedFlight = Flight.builder().id(flightId).finished(true).build();
     when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
 
-    Mockito.doNothing().when(invoiceRequestRepository).save(invoiceRequest);
+    UUID requestId = UUID.randomUUID();
+    when(invoiceRequestRepository.save(invoiceRequest)).thenReturn(requestId);
 
-    orderService.requestInvoice(invoiceRequest);
+    UUID actual = orderService.requestInvoice(invoiceRequest);
+
+    assertEquals(requestId, actual);
   }
 }
