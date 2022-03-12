@@ -9,7 +9,7 @@ import javax.persistence.EntityManager;
 
 @ActiveProfiles("test")
 @SpringBootTest
-public abstract class TestBase {
+public abstract class DbBase {
 
   @Autowired
   protected EntityManager entityManager;
