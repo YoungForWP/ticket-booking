@@ -1,6 +1,6 @@
 package com.ticketbook.order.infrastructure.repository;
 
-import com.ticketbook.order.infrastructure.entity.TicketEntity;
+import com.ticketbook.order.infrastructure.repository.entity.TicketEntity;
 import com.ticketbook.order.model.Ticket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;

@@ -1,4 +1,4 @@
-package com.ticketbook.order.infrastructure.entity;
+package com.ticketbook.order.infrastructure.repository.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -1,6 +1,6 @@
 package com.ticketbook.order.infrastructure.repository.helper;
 
-import com.ticketbook.order.infrastructure.entity.TicketEntity;
+import com.ticketbook.order.infrastructure.repository.entity.TicketEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;

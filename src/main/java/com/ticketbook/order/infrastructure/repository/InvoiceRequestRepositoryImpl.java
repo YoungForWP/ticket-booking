@@ -1,6 +1,6 @@
 package com.ticketbook.order.infrastructure.repository;
 
-import com.ticketbook.order.infrastructure.entity.InvoiceRequestEntity;
+import com.ticketbook.order.infrastructure.repository.entity.InvoiceRequestEntity;
 import com.ticketbook.order.model.InvoiceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
