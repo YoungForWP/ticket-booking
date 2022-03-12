@@ -3,9 +3,9 @@ package com.ticketbook.order.infrastructure.client;
 import com.ticketbook.order.infrastructure.client.apimodel.FlightResponse;
 import com.ticketbook.order.model.Flight;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class FlightClientImpl implements FlightClient {
 
   private final String flightUrl;
