@@ -19,11 +19,12 @@ public class OrderService {
     this.flightClient = flightClient;
   }
 
-  public void requestInvoice(String orderId) {
+  public String requestInvoice(String orderId) {
     Order order = orderRepository.getOrderById(orderId);
     Flight flight = flightClient.getFlight(order.getFlightId());
     if (!flight.isFinished()) {
       throw new FlightIsNotFinishedException(flight.getId());
     }
+    return null;
   }
 }
