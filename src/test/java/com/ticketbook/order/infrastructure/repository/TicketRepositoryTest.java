@@ -1,6 +1,6 @@
 package com.ticketbook.order.infrastructure.repository;
 
-import com.ticketbook.order.infrastructure.entity.Order;
+import com.ticketbook.order.infrastructure.entity.TicketEntity;
 import com.ticketbook.order.infrastructure.repository.helper.DbBase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,19 +12,19 @@ import javax.transaction.Transactional;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
-public class OrderRepositoryTest extends DbBase {
+public class TicketRepositoryTest extends DbBase {
 
   @Autowired
-  private OrderRepository orderRepository;
+  private TicketRepository ticketRepository;
 
   @Test
   @Transactional
-  public void getOrderById_should_get_order_detail_by_id() {
-    setupOrder();
+  public void getTicketById_should_get_ticket_detail_by_id() {
+    setupTicket();
 
-    Order order = orderRepository.getOrderById("AH597C");
+    TicketEntity ticket = ticketRepository.getTicketById("AH597C");
 
-    Order expectedOrder = Order.builder().id("AH597C").flightId("6X5CAB").build();
-    assertEquals(order, expectedOrder);
+    TicketEntity expectedTicket = TicketEntity.builder().id("AH597C").flightId("6X5CAB").build();
+    assertEquals(ticket, expectedTicket);
   }
 }

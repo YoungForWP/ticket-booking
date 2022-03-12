@@ -13,7 +13,7 @@ import javax.validation.constraints.Pattern;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InvoiceRequest {
+public class InvoiceRequestDTO {
 
   @NotNull(message = "Email is required.")
   @NotEmpty(message = "Email is required.")

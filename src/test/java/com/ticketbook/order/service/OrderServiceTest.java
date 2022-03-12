@@ -1,15 +1,21 @@
 package com.ticketbook.order.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ticketbook.order.infrastructure.client.FlightClient;
-import com.ticketbook.order.infrastructure.entity.Order;
+import com.ticketbook.order.infrastructure.entity.TicketEntity;
 import com.ticketbook.order.infrastructure.model.Flight;
-import com.ticketbook.order.infrastructure.repository.OrderRepository;
+import com.ticketbook.order.infrastructure.repository.InvoiceRequestRepository;
+import com.ticketbook.order.infrastructure.repository.TicketRepository;
+import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -22,27 +28,55 @@ public class OrderServiceTest {
   private OrderService orderService;
 
   @Mock
-  private OrderRepository orderRepository;
+  private TicketRepository ticketRepository;
+
+  @Mock
+  private InvoiceRequestRepository invoiceRequestRepository;
 
   @Mock
   private FlightClient flightClient;
 
   @Test
   public void requestInvoice_should_throw_exception_when_flight_is_not_finished() {
-    String orderID = "AH597C";
+    String ticketId = "AH597C";
     String flightId = "6X5CAB";
 
-    Throwable exception = assertThrows(
-        FlightIsNotFinishedException.class, () -> {
-          Order mockedOrder = Order.builder().id(orderID).flightId(flightId).build();
-          when(orderRepository.getOrderById(orderID)).thenReturn(mockedOrder);
-          Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
-          when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
+    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
+        .ticketId(ticketId)
+        .email("test@gmail.com")
+        .build();
 
-          orderService.requestInvoice(orderID);
-        }
+    TicketEntity mockedTicket = TicketEntity.builder().id(ticketId).flightId(flightId).build();
+    when(ticketRepository.getTicketById(ticketId)).thenReturn(mockedTicket);
+    Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
+    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
+
+    Throwable exception = assertThrows(
+        FlightIsNotFinishedException.class, () -> orderService.requestInvoice(invoiceRequest)
     );
 
     assertEquals(exception.getMessage(), "Flight with id 6X5CAB is not finished.");
+  }
+
+  @Test
+  public void requestInvoice_should_success_when_flight_is_finished() {
+    String flightId = "9A5F7B";
+    String ticketId = "af12f6";
+
+    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
+        .id(UUID.randomUUID())
+        .ticketId(ticketId)
+        .email("test@gmail.com")
+        .build();
+
+    TicketEntity mockedTicket = TicketEntity.builder().id(ticketId).flightId(flightId).build();
+    when(ticketRepository.getTicketById(ticketId)).thenReturn(mockedTicket);
+
+    Flight mockedFlight = Flight.builder().id(flightId).finished(true).build();
+    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
+
+    Mockito.doNothing().when(invoiceRequestRepository).save(invoiceRequest);
+
+    orderService.requestInvoice(invoiceRequest);
   }
 }
