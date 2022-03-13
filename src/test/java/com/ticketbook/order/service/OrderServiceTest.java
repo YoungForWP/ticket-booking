@@ -83,10 +83,8 @@ public class OrderServiceTest {
         .email("test@gmail.com")
         .build();
 
-    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
-    Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
-    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, false);
 
     Throwable exception = assertThrows(
         FlightIsNotFinishedException.class, () -> orderService.requestInvoice(invoiceRequest)
@@ -105,11 +103,8 @@ public class OrderServiceTest {
         .email("test@gmail.com")
         .build();
 
-    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
-
-    Flight mockedFlight = Flight.builder().id(flightId).finished(true).build();
-    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, true);
 
     UUID requestId = UUID.randomUUID();
     when(invoiceRequestRepository.save(invoiceRequest)).thenReturn(requestId);
@@ -129,10 +124,8 @@ public class OrderServiceTest {
         .amount(BigDecimal.valueOf(600))
         .build();
 
-    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
-    Flight mockedFlight = Flight.builder().id(flightId).finished(true).build();
-    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, true);
 
     Throwable exception = assertThrows(
         FlightIsFinishedException.class, () -> orderService.requestCancellation(cancellationRequest)
@@ -151,13 +144,9 @@ public class OrderServiceTest {
         .amount(BigDecimal.valueOf(600))
         .build();
 
-    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
-    Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
-    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
-    CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(true).build();
-    when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
-        .thenReturn(cancellationConfirmation);
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, false);
+    mockCancellationConfirmation(ticketId, true);
 
     Throwable exception = assertThrows(
         TicketIsAlreadyCancelledException.class,
@@ -180,15 +169,10 @@ public class OrderServiceTest {
         .amount(BigDecimal.valueOf(600))
         .build();
 
-    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
-    Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
-    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
-    CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(false).build();
-    when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
-        .thenReturn(cancellationConfirmation);
-    PaymentConfirmation paymentConfirmation = PaymentConfirmation.builder().confirmed(false).build();
-    when(paymentConfirmationRepository.getPaymentConfirmation(orderId)).thenReturn(paymentConfirmation);
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, false);
+    mockCancellationConfirmation(ticketId, false);
+    mockPaymentConfirmation(orderId, false);
 
     Throwable exception = assertThrows(
         OrderNotPaidException.class,
@@ -210,15 +194,10 @@ public class OrderServiceTest {
         .amount(BigDecimal.valueOf(600))
         .build();
 
-    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
-    Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
-    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
-    CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(false).build();
-    when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
-        .thenReturn(cancellationConfirmation);
-    PaymentConfirmation paymentConfirmation = PaymentConfirmation.builder().confirmed(true).build();
-    when(paymentConfirmationRepository.getPaymentConfirmation(orderId)).thenReturn(paymentConfirmation);
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, false);
+    mockCancellationConfirmation(ticketId, false);
+    mockPaymentConfirmation(orderId, true);
 
     when(alternationConfirmationRepository.getAlternationConfirmation(ticketId)).thenReturn(null);
     when(alternationRequestRepository.getAlternationRequest(ticketId)).thenReturn(mock(AlternationRequest.class));
@@ -243,15 +222,10 @@ public class OrderServiceTest {
         .amount(BigDecimal.valueOf(600))
         .build();
 
-    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
-    Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
-    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
-    CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(false).build();
-    when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
-        .thenReturn(cancellationConfirmation);
-    PaymentConfirmation paymentConfirmation = PaymentConfirmation.builder().confirmed(true).build();
-    when(paymentConfirmationRepository.getPaymentConfirmation(orderId)).thenReturn(paymentConfirmation);
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, false);
+    mockCancellationConfirmation(ticketId, false);
+    mockPaymentConfirmation(orderId, true);
     doThrow(HttpServerErrorException.ServiceUnavailable.class).when(paymentClient).refund(any());
 
     Throwable exception = assertThrows(
@@ -260,5 +234,26 @@ public class OrderServiceTest {
     );
 
     assertEquals(exception.getMessage(), "Payment service is not available now.");
+  }
+
+  private void mockPaymentConfirmation(String orderId, boolean confirmed) {
+    PaymentConfirmation paymentConfirmation = PaymentConfirmation.builder().confirmed(confirmed).build();
+    when(paymentConfirmationRepository.getPaymentConfirmation(orderId)).thenReturn(paymentConfirmation);
+  }
+
+  private void mockCancellationConfirmation(String ticketId, boolean confirmed) {
+    CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(confirmed).build();
+    when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
+        .thenReturn(cancellationConfirmation);
+  }
+
+  private void mockFlight(String flightId, boolean finished) {
+    Flight mockedFlight = Flight.builder().id(flightId).finished(finished).build();
+    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
+  }
+
+  private void mockTicket(String ticketId, String flightId) {
+    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
+    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
   }
 }
