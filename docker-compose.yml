@@ -1,0 +1,14 @@
+version: '2.2'
+services:
+  localstack:
+    privileged: true
+    image: localstack/localstack:0.12.15
+    container_name: localstack_service
+    environment:
+      - SERVICES=sqs
+      - DEBUG=1
+      - AWS_DEFAULT_REGION=ap-southeast-2
+      - AWS_ACCESS_KEY_ID=dummy
+      - AWS_SECRET_ACCESS_KEY=dummy
+    ports:
+      - "4566:4566"
