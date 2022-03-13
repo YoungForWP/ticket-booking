@@ -1,6 +1,7 @@
 package com.ticketbook.order.infrastructure.repository.helper;
 
 import com.ticketbook.order.infrastructure.repository.entity.CancellationConfirmationEntity;
+import com.ticketbook.order.infrastructure.repository.entity.PaymentConfirmationEntity;
 import com.ticketbook.order.infrastructure.repository.entity.TicketEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -35,6 +36,17 @@ public abstract class DbBase {
         .cancellationRequestId(UUID.fromString("5e25c7ed-fdfc-448d-b987-6fe3e76c2a70"))
         .amount(BigDecimal.valueOf(600))
         .confirmed(true)
+        .build();
+    entityManager.persist(confirmation);
+  }
+
+  protected void setupPaymentConfirmation(String orderId) {
+    PaymentConfirmationEntity confirmation = PaymentConfirmationEntity
+        .builder()
+        .orderId(orderId)
+        .id(UUID.fromString("eefa0041-19ce-4fb6-a4e2-131e2e83c06d"))
+        .amount(BigDecimal.valueOf(600))
+        .confirmed(false)
         .build();
     entityManager.persist(confirmation);
   }

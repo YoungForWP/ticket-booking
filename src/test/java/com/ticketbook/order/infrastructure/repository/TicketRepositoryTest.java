@@ -21,7 +21,7 @@ public class TicketRepositoryTest extends DbBase {
 
   @Test
   @Transactional
-  public void getTicketById_should_get_ticket_detail_by_id() {
+  public void getTicket_should_get_ticket_detail_by_id() {
     setupTicket();
 
     Ticket ticket = ticketRepository.getTicket("AH597C");

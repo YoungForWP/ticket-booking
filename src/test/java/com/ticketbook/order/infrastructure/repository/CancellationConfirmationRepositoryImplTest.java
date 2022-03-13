@@ -21,7 +21,7 @@ public class CancellationConfirmationRepositoryImplTest extends DbBase {
 
   @Test
   @Transactional
-  public void getTicketById_should_get_ticket_detail_by_id() {
+  public void getCancellationConfirmation_should_get_cancellation_confirmation_by_ticket_id() {
     String ticketId = "ABCD";
     setupCancellationConfirmation(ticketId);
 
