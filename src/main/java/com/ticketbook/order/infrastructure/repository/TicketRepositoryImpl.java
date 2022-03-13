@@ -15,7 +15,7 @@ public class TicketRepositoryImpl implements TicketRepository {
 
 
   @Override
-  public Ticket getTicketById(String id) {
+  public Ticket getTicket(String id) {
     TicketEntity ticketEntity = entityManager.find(TicketEntity.class, id);
     return ticketEntity.toModel();
   }

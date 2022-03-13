@@ -9,6 +9,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.transaction.Transactional;
 
+import java.math.BigDecimal;
+
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
@@ -22,9 +24,15 @@ public class TicketRepositoryTest extends DbBase {
   public void getTicketById_should_get_ticket_detail_by_id() {
     setupTicket();
 
-    Ticket ticket = ticketRepository.getTicketById("AH597C");
+    Ticket ticket = ticketRepository.getTicket("AH597C");
 
-    Ticket expectedTicket = Ticket.builder().id("AH597C").flightId("6X5CAB").build();
+    Ticket expectedTicket = Ticket
+        .builder()
+        .id("AH597C")
+        .actuallyPaid(BigDecimal.valueOf(500))
+        .flightId("6X5CAB")
+        .build();
+
     assertEquals(ticket, expectedTicket);
   }
 }

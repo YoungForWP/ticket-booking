@@ -13,6 +13,8 @@ public class Ticket {
 
   private BigDecimal amount;
 
+  private BigDecimal actuallyPaid;
+
   private String flightId;
 
 }

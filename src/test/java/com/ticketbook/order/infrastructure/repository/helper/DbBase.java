@@ -18,7 +18,12 @@ public abstract class DbBase {
   protected EntityManager entityManager;
 
   protected void setupTicket() {
-    TicketEntity ticket = TicketEntity.builder().id("AH597C").flightId("6X5CAB").build();
+    TicketEntity ticket = TicketEntity
+        .builder()
+        .id("AH597C")
+        .flightId("6X5CAB")
+        .actuallyPaid(BigDecimal.valueOf(500))
+        .build();
     entityManager.persist(ticket);
   }
 

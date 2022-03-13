@@ -46,10 +46,10 @@ public class OrderService {
   }
 
   public UUID requestInvoice(InvoiceRequest request) throws JsonProcessingException {
-    Ticket ticket = ticketRepository.getTicketById(request.getTicketId());
+    Ticket ticket = ticketRepository.getTicket(request.getTicketId());
     checkFlightIsFinished(ticket.getFlightId());
 
-    InvoiceRequest invoiceRequest = request.toBuilder().amount(ticket.getAmount()).build();
+    InvoiceRequest invoiceRequest = request.toBuilder().amount(ticket.getActuallyPaid()).build();
     UUID invoiceRequestId = invoiceRequestRepository.save(invoiceRequest);
 
     sqsClient.sendMessage(invoiceRequest.toBuilder().id(invoiceRequestId).build());
@@ -58,7 +58,7 @@ public class OrderService {
   }
 
   public UUID requestCancellation(CancellationRequest request) {
-    Ticket ticket = ticketRepository.getTicketById(request.getTicketId());
+    Ticket ticket = ticketRepository.getTicket(request.getTicketId());
     checkFlightIsNotFinished(ticket.getFlightId());
     checkNoCancellationConfirmation(request, ticket);
     return null;

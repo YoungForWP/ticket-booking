@@ -4,6 +4,6 @@ import com.ticketbook.order.model.Ticket;
 
 public interface TicketRepository {
 
-  Ticket getTicketById(String id);
+  Ticket getTicket(String id);
 
 }

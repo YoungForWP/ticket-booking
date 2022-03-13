@@ -27,6 +27,8 @@ public class TicketEntity {
 
   private BigDecimal amount;
 
+  private BigDecimal actuallyPaid;
+
   private String flightId;
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -36,6 +38,7 @@ public class TicketEntity {
   public Ticket toModel() {
     return Ticket.builder()
         .id(this.getId())
+        .actuallyPaid(this.getActuallyPaid())
         .amount(this.getAmount())
         .flightId(this.getFlightId())
         .build();

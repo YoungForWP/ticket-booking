@@ -59,7 +59,7 @@ public class OrderServiceTest {
         .build();
 
     Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicketById(ticketId)).thenReturn(mockedTicket);
+    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
     Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
     when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
 
@@ -81,7 +81,7 @@ public class OrderServiceTest {
         .build();
 
     Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicketById(ticketId)).thenReturn(mockedTicket);
+    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
 
     Flight mockedFlight = Flight.builder().id(flightId).finished(true).build();
     when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
@@ -105,7 +105,7 @@ public class OrderServiceTest {
         .build();
 
     Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicketById(ticketId)).thenReturn(mockedTicket);
+    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
     Flight mockedFlight = Flight.builder().id(flightId).finished(true).build();
     when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
 
@@ -127,7 +127,7 @@ public class OrderServiceTest {
         .build();
 
     Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
-    when(ticketRepository.getTicketById(ticketId)).thenReturn(mockedTicket);
+    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
     Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
     when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
     CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(true).build();
