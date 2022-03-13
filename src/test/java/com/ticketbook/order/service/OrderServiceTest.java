@@ -101,7 +101,7 @@ public class OrderServiceTest {
   }
 
   @Test
-  public void requestInvoice_should_throw_exception_ticket_has_been_cancelled() {
+  public void requestInvoice_should_throw_exception_when_ticket_has_been_cancelled() {
     String ticketId = "AH597C";
     String flightId = "6X5CAB";
 
@@ -211,26 +211,6 @@ public class OrderServiceTest {
     UUID actual = orderService.requestInvoice(invoiceRequest);
 
     assertEquals(requestId, actual);
-  }
-
-  @Test
-  public void requestCancellation_should_throw_exception_when_flight_is_finished() {
-    String ticketId = "AH597C";
-    String flightId = "6X5CAB";
-
-    CancellationRequest cancellationRequest = CancellationRequest.builder()
-        .ticketId(ticketId)
-        .amount(BigDecimal.valueOf(600))
-        .build();
-
-    mockTicket(ticketId, flightId);
-    mockFlight(flightId, true);
-
-    Throwable exception = assertThrows(
-        FlightIsFinishedException.class, () -> orderService.requestCancellation(cancellationRequest)
-    );
-
-    assertEquals(exception.getMessage(), "Flight with id 6X5CAB is finished.");
   }
 
   @Test

@@ -117,10 +117,9 @@ public class OrderService {
 
   private void checkCanRequestCancellation(CancellationRequest request) {
     Ticket ticket = ticketRepository.getTicket(request.getTicketId());
-    checkFlightIsNotFinished(ticket.getFlightId());
     checkNoCancellationConfirmation(ticket.getId());
     checkOrderIsPaid(request.getOrderId());
-    checkTicketIsInAlteration(ticket.getId());
+    checkTicketIsNotInAlteration(ticket.getId());
   }
 
 
@@ -136,7 +135,7 @@ public class OrderService {
     }
   }
 
-  private void checkTicketIsInAlteration(String ticketId) {
+  private void checkTicketIsNotInAlteration(String ticketId) {
     AlternationConfirmation confirmation = alternationConfirmationRepository.getAlternationConfirmation(ticketId);
     if (Objects.nonNull(confirmation) && confirmation.isConfirmed()) {
       return;
@@ -159,14 +158,6 @@ public class OrderService {
     CancellationConfirmation cancellationConfirmation = cancellationConfirmationRepository.getCancellationConfirmation(ticketId);
     if (Objects.nonNull(cancellationConfirmation) && cancellationConfirmation.isConfirmed()) {
       throw new TicketIsAlreadyCancelledException(ticketId);
-    }
-  }
-
-  private void checkFlightIsNotFinished(String flightId) {
-    Flight flight = flightClient.getFlight(flightId);
-
-    if (flight.isFinished()) {
-      throw new FlightIsFinishedException(flight.getId());
     }
   }
 
