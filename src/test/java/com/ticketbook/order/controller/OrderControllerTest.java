@@ -8,6 +8,7 @@ import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.service.OrderService;
 import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
+import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -141,6 +142,19 @@ public class OrderControllerTest {
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("Flight with id 9A5F7B is finished.")));
+  }
+
+  @Test
+  public void requestCancellation_should_return_400_when_ticket_is_already_cancelled() throws Exception {
+    CancellationRequestDto request = CancellationRequestDto.builder().amount(BigDecimal.valueOf(600)).build();
+
+    when(orderService.requestCancellation(any())).thenThrow(new TicketIsAlreadyCancelledException("af12f6"));
+
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/cancellation")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(containsString("Ticket with id af12f6 is already cancelled.")));
   }
 
 }
