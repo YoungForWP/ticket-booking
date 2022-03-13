@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
 import com.amazonaws.services.sqs.model.CreateQueueRequest;
 import com.amazonaws.services.sqs.model.CreateQueueResult;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,5 +45,10 @@ public abstract class SqsBase {
 
     CreateQueueResult queue = amazonSQSAsync.createQueue(new CreateQueueRequest("testSqs"));
     queueUrl = queue.getQueueUrl();
+  }
+
+  @After
+  public void tearDown() {
+    localstack.stop();
   }
 }

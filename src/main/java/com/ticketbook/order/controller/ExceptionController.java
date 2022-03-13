@@ -1,7 +1,8 @@
 package com.ticketbook.order.controller;
 
 import com.ticketbook.order.dto.ErrorDetail;
-import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAvailableException;
+import com.ticketbook.order.service.exception.ConnectToSqsFailedException;
+import com.ticketbook.order.service.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
@@ -21,17 +22,16 @@ public class ExceptionController {
 
   @ExceptionHandler(value = {MethodArgumentNotValidException.class, FlightIsNotFinishedException.class,
       FlightIsFinishedException.class, TicketIsAlreadyCancelledException.class, OrderNotPaidException.class,
-      TicketIsInAlterationProcessingException.class, TicketIsInCancellationProcessingException.class})
+      TicketIsInAlterationProcessingException.class, TicketIsInCancellationProcessingException.class
+  })
   public ResponseEntity<ErrorDetail> handleInvalidInputException(
       Exception exception
   ) {
     return buildExceptionResponse(HttpStatus.BAD_REQUEST, exception);
   }
 
-  @ExceptionHandler(value = PaymentServiceNotAvailableException.class)
-  public ResponseEntity<ErrorDetail> handleInternalException(
-      PaymentServiceNotAvailableException exception
-  ) {
+  @ExceptionHandler(value = {PaymentServiceNotAvailableException.class, ConnectToSqsFailedException.class})
+  public ResponseEntity<ErrorDetail> handleInternalException(Exception exception) {
     return buildExceptionResponse(HttpStatus.INTERNAL_SERVER_ERROR, exception);
   }
 }

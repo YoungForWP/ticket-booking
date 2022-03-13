@@ -1,10 +1,12 @@
 package com.ticketbook.order.infrastructure.client;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticketbook.order.infrastructure.client.apimodel.InvoiceResource;
 import com.ticketbook.order.model.InvoiceRequest;
+import com.ticketbook.order.infrastructure.exception.ConnectionException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +30,11 @@ public class SqsClientImpl implements SqsClient {
   @Override
   public void sendMessage(InvoiceRequest invoiceRequest) throws JsonProcessingException {
     InvoiceResource invoiceResource = InvoiceResource.from(invoiceRequest);
-    amazonSQSAsync.sendMessage(sqsUrl, objectMapper.writeValueAsString(invoiceResource));
+    try {
+      amazonSQSAsync.sendMessage(sqsUrl, objectMapper.writeValueAsString(invoiceResource));
+    } catch (SdkClientException exception){
+      throw new ConnectionException();
+    }
   }
 
 }

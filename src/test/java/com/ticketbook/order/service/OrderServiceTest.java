@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ticketbook.order.infrastructure.client.FlightClientImpl;
 import com.ticketbook.order.infrastructure.client.PaymentClient;
 import com.ticketbook.order.infrastructure.client.SqsClientImpl;
-import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAvailableException;
+import com.ticketbook.order.infrastructure.exception.ConnectionException;
+import com.ticketbook.order.service.exception.ConnectToSqsFailedException;
+import com.ticketbook.order.service.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.CancellationConfirmationRepository;
@@ -163,6 +165,31 @@ public class OrderServiceTest {
     );
 
     assertEquals(exception.getMessage(), "Order with id BT1238 is not paid.");
+  }
+
+  @Test
+  public void requestInvoice_should_failed_when_error_happened_connect_to_sqs() throws JsonProcessingException {
+    String flightId = "9A5F7B";
+    String ticketId = "af12f6";
+    String orderId = "ABceF";
+
+    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
+        .ticketId(ticketId)
+        .orderId(orderId)
+        .email("test@gmail.com")
+        .build();
+
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, true);
+    mockPaymentConfirmation(orderId, true);
+    doThrow(ConnectionException.class).when(sqsClient).sendMessage(invoiceRequest);
+
+    Throwable exception = assertThrows(
+        ConnectToSqsFailedException.class,
+        () -> orderService.requestInvoice(invoiceRequest)
+    );
+
+    assertEquals(exception.getMessage(), "Failed to connect to SQS.");
   }
 
   @Test

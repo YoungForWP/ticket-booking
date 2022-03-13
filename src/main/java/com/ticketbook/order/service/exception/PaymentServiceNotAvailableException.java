@@ -1,4 +1,4 @@
-package com.ticketbook.order.infrastructure.client.exception;
+package com.ticketbook.order.service.exception;
 
 public class PaymentServiceNotAvailableException extends RuntimeException {
 

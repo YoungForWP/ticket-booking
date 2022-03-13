@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ticketbook.order.infrastructure.client.FlightClientImpl;
 import com.ticketbook.order.infrastructure.client.PaymentClient;
 import com.ticketbook.order.infrastructure.client.SqsClient;
-import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAvailableException;
+import com.ticketbook.order.infrastructure.exception.ConnectionException;
+import com.ticketbook.order.service.exception.ConnectToSqsFailedException;
+import com.ticketbook.order.service.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.CancellationConfirmationRepository;
@@ -85,7 +87,11 @@ public class OrderService {
     InvoiceRequest invoiceRequest = request.toBuilder().amount(ticket.getActuallyPaid()).build();
     UUID invoiceRequestId = invoiceRequestRepository.save(invoiceRequest);
 
-    sqsClient.sendMessage(invoiceRequest.toBuilder().id(invoiceRequestId).build());
+    try {
+      sqsClient.sendMessage(invoiceRequest.toBuilder().id(invoiceRequestId).build());
+    } catch (ConnectionException exception) {
+      throw new ConnectToSqsFailedException();
+    }
 
     return invoiceRequestId;
   }

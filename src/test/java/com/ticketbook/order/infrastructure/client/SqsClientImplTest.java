@@ -5,6 +5,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticketbook.order.infrastructure.client.apimodel.InvoiceResource;
+import com.ticketbook.order.infrastructure.exception.ConnectionException;
 import com.ticketbook.order.infrastructure.repository.helper.SqsBase;
 import com.ticketbook.order.model.InvoiceRequest;
 import org.junit.Before;
@@ -56,5 +57,19 @@ public class SqsClientImplTest extends SqsBase {
         .build();
 
     assertEquals(receivedRequest, invoiceResource);
+  }
+
+  @Test(expected = ConnectionException.class)
+  public void sendMessage_should_send_invoice_failed_when_connection_is_lose() throws JsonProcessingException {
+    UUID requestId = UUID.randomUUID();
+    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
+        .id(requestId)
+        .email("test@gmail.com")
+        .amount(BigDecimal.valueOf(1000))
+        .build();
+
+    localstack.stop();
+
+    sqsClient.sendMessage(invoiceRequest);
   }
 }

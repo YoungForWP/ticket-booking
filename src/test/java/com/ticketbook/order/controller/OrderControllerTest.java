@@ -5,7 +5,8 @@ import com.ticketbook.order.dto.CancellationRequestDto;
 import com.ticketbook.order.dto.CancellationResponseDto;
 import com.ticketbook.order.dto.InvoiceRequestDto;
 import com.ticketbook.order.dto.InvoiceResponseDto;
-import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAvailableException;
+import com.ticketbook.order.service.exception.ConnectToSqsFailedException;
+import com.ticketbook.order.service.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.service.OrderService;
 import com.ticketbook.order.service.exception.FlightIsFinishedException;
@@ -149,6 +150,20 @@ public class OrderControllerTest {
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("Order with id AH597C is not paid.")));
+  }
+
+
+  @Test
+  public void requestInvoice_should_return_500_when_connect_to_sqs_failed() throws Exception {
+    InvoiceRequestDto request = InvoiceRequestDto.builder().email("test@gmail.com").build();
+
+    when(orderService.requestInvoice(any())).thenThrow(new ConnectToSqsFailedException());
+
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/invoice")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is5xxServerError())
+        .andExpect(content().string(containsString("Failed to connect to SQS.")));
   }
 
   @Test
