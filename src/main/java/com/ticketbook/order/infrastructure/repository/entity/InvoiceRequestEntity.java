@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -29,11 +30,17 @@ public class InvoiceRequestEntity {
 
   private BigDecimal amount;
 
-  public static InvoiceRequestEntity fromModel(InvoiceRequest request) {
+  private LocalDateTime createdAt;
+
+  private LocalDateTime expiryAt;
+
+  public static InvoiceRequestEntity fromModel(InvoiceRequest request, LocalDateTime current) {
     return InvoiceRequestEntity.builder()
         .id(UUID.randomUUID())
         .ticketId(request.getTicketId())
         .email(request.getEmail())
+        .createdAt(current)
+        .expiryAt(current.plusDays(2))
         .amount(request.getAmount())
         .build();
   }

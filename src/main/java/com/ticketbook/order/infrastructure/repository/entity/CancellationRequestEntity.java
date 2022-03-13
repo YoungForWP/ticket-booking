@@ -10,6 +10,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -27,12 +28,18 @@ public class CancellationRequestEntity {
 
   private BigDecimal amount;
 
-  public static CancellationRequestEntity fromModel(CancellationRequest request) {
+  private LocalDateTime createdAt;
+
+  private LocalDateTime expiryAt;
+
+  public static CancellationRequestEntity fromModel(CancellationRequest request, LocalDateTime current) {
     return CancellationRequestEntity
         .builder()
         .id(UUID.randomUUID())
         .amount(request.getAmount())
         .ticketId(request.getTicketId())
+        .createdAt(current)
+        .expiryAt(current.plusDays(7))
         .build();
   }
 
