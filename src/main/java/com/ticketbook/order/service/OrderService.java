@@ -6,6 +6,7 @@ import com.ticketbook.order.infrastructure.client.PaymentClient;
 import com.ticketbook.order.infrastructure.client.SqsClient;
 import com.ticketbook.order.infrastructure.exception.ConnectionException;
 import com.ticketbook.order.service.exception.ConnectToSqsFailedException;
+import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
@@ -117,6 +118,7 @@ public class OrderService {
 
   private void checkCanRequestCancellation(CancellationRequest request) {
     Ticket ticket = ticketRepository.getTicket(request.getTicketId());
+    checkFlightIsNotFinished(ticket.getFlightId());
     checkNoCancellationConfirmation(ticket.getId());
     checkOrderIsPaid(request.getOrderId());
     checkTicketIsNotInAlteration(ticket.getId());
@@ -158,6 +160,14 @@ public class OrderService {
     CancellationConfirmation cancellationConfirmation = cancellationConfirmationRepository.getCancellationConfirmation(ticketId);
     if (Objects.nonNull(cancellationConfirmation) && cancellationConfirmation.isConfirmed()) {
       throw new TicketIsAlreadyCancelledException(ticketId);
+    }
+  }
+
+  private void checkFlightIsNotFinished(String flightId) {
+    Flight flight = flightClient.getFlight(flightId);
+
+    if (flight.isFinished()) {
+      throw new FlightIsFinishedException(flight.getId());
     }
   }
 

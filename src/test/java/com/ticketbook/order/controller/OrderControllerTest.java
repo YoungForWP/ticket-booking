@@ -197,6 +197,19 @@ public class OrderControllerTest {
   }
 
   @Test
+  public void requestCancellation_should_return_400_when_flight_is_finished() throws Exception {
+    CancellationRequestDto request = CancellationRequestDto.builder().amount(BigDecimal.valueOf(600)).build();
+
+    when(orderService.requestCancellation(any())).thenThrow(new FlightIsFinishedException("9A5F7B"));
+
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/cancellation")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(containsString("Flight with id 9A5F7B is finished.")));
+  }
+
+  @Test
   public void requestCancellation_should_return_400_when_ticket_is_already_cancelled() throws Exception {
     CancellationRequestDto request = CancellationRequestDto.builder().amount(BigDecimal.valueOf(600)).build();
 
