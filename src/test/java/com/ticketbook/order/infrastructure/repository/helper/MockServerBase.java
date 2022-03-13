@@ -7,6 +7,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.model.Header;
+import org.mockserver.model.HttpStatusCode;
 
 import static org.mockserver.integration.ClientAndServer.startClientAndServer;
 import static org.mockserver.model.HttpRequest.request;
@@ -37,6 +38,18 @@ public abstract class MockServerBase {
             .withBody(objectMapper.writeValueAsString(
                 FlightResponse.builder().id(flightId).finished(finished).build())
             )
+    );
+  }
+
+  protected void mockPaymentServerUnableAvailable() {
+    mockServer.when(
+        request()
+            .withMethod("POST")
+            .withPath("/payment/refund")
+    ).respond(
+        response()
+            .withHeaders(new Header(CONTENT_TYPE, APPLICATION_JSON.toString()))
+            .withStatusCode(HttpStatusCode.SERVICE_UNAVAILABLE_503.code())
     );
   }
 

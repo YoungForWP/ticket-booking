@@ -2,7 +2,9 @@ package com.ticketbook.order.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ticketbook.order.infrastructure.client.FlightClientImpl;
+import com.ticketbook.order.infrastructure.client.PaymentClient;
 import com.ticketbook.order.infrastructure.client.SqsClientImpl;
+import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.CancellationConfirmationRepository;
@@ -19,18 +21,22 @@ import com.ticketbook.order.model.Ticket;
 import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
+import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
 import com.ticketbook.order.service.exception.TicketIsInAlterationProcessingException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -63,6 +69,9 @@ public class OrderServiceTest {
 
   @Mock
   private SqsClientImpl sqsClient;
+
+  @Mock
+  private PaymentClient paymentClient;
 
   @Test
   public void requestInvoice_should_throw_exception_when_flight_is_not_finished() {
@@ -146,18 +155,17 @@ public class OrderServiceTest {
     when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
     Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
     when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
-    CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(false).build();
+    CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(true).build();
     when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
         .thenReturn(cancellationConfirmation);
-   when(alternationConfirmationRepository.getAlternationConfirmation(ticketId)).thenReturn(null);
-   when(alternationRequestRepository.getAlternationRequest(ticketId)).thenReturn(mock(AlternationRequest.class));
 
     Throwable exception = assertThrows(
-        TicketIsInAlterationProcessingException.class,
+        TicketIsAlreadyCancelledException.class,
         () -> orderService.requestCancellation(cancellationRequest)
     );
 
-    assertEquals(exception.getMessage(), "Ticket with id AH597C is in alternation processing.");
+    assertEquals(exception.getMessage(), "Ticket with id AH597C is already cancelled.");
+
   }
 
   @Test
@@ -209,14 +217,48 @@ public class OrderServiceTest {
     CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(false).build();
     when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
         .thenReturn(cancellationConfirmation);
-    PaymentConfirmation paymentConfirmation = PaymentConfirmation.builder().confirmed(false).build();
+    PaymentConfirmation paymentConfirmation = PaymentConfirmation.builder().confirmed(true).build();
     when(paymentConfirmationRepository.getPaymentConfirmation(orderId)).thenReturn(paymentConfirmation);
 
+    when(alternationConfirmationRepository.getAlternationConfirmation(ticketId)).thenReturn(null);
+    when(alternationRequestRepository.getAlternationRequest(ticketId)).thenReturn(mock(AlternationRequest.class));
+
     Throwable exception = assertThrows(
-        OrderNotPaidException.class,
+        TicketIsInAlterationProcessingException.class,
         () -> orderService.requestCancellation(cancellationRequest)
     );
 
-    assertEquals(exception.getMessage(), "Order with id AC78F6 is not paid.");
+    assertEquals(exception.getMessage(), "Ticket with id AH597C is in alternation processing.");
+  }
+
+  @Test
+  public void requestCancellation_should_throw_exception_when_payment_service_is_not_available() {
+    String ticketId = "AH597C";
+    String flightId = "6X5CAB";
+    String orderId = "AC78F6";
+
+    CancellationRequest cancellationRequest = CancellationRequest.builder()
+        .ticketId(ticketId)
+        .orderId(orderId)
+        .amount(BigDecimal.valueOf(600))
+        .build();
+
+    Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
+    when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
+    Flight mockedFlight = Flight.builder().id(flightId).finished(false).build();
+    when(flightClient.getFlight(flightId)).thenReturn(mockedFlight);
+    CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(false).build();
+    when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
+        .thenReturn(cancellationConfirmation);
+    PaymentConfirmation paymentConfirmation = PaymentConfirmation.builder().confirmed(true).build();
+    when(paymentConfirmationRepository.getPaymentConfirmation(orderId)).thenReturn(paymentConfirmation);
+    doThrow(HttpServerErrorException.ServiceUnavailable.class).when(paymentClient).refund(any());
+
+    Throwable exception = assertThrows(
+        PaymentServiceNotAvailableException.class,
+        () -> orderService.requestCancellation(cancellationRequest)
+    );
+
+    assertEquals(exception.getMessage(), "Payment service is not available now.");
   }
 }

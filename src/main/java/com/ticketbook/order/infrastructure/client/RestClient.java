@@ -25,4 +25,11 @@ public class RestClient {
     return restTemplate
         .exchange(endpoint, HttpMethod.GET, new HttpEntity<String>(headers), clazz).getBody();
   }
+
+  public <T> T post(String endpoint, Object body, Class<T> clazz) {
+    HttpHeaders headers = new HttpHeaders();
+    headers.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
+    return restTemplate
+        .exchange(endpoint, HttpMethod.POST, new HttpEntity<>(body, headers), clazz).getBody();
+  }
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticketbook.order.dto.CancellationRequestDto;
 import com.ticketbook.order.dto.InvoiceRequestDto;
 import com.ticketbook.order.dto.InvoiceResponseDto;
+import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.service.OrderService;
 import com.ticketbook.order.service.exception.FlightIsFinishedException;
@@ -185,5 +186,15 @@ public class OrderControllerTest {
         .andExpect(content().string(containsString("Ticket with id af12f6 is in alternation processing.")));
   }
 
+  @Test
+  public void requestCancellation_should_return_500_when_payment_service_not_available() throws Exception {
+    CancellationRequestDto request = CancellationRequestDto.builder().amount(BigDecimal.valueOf(600)).build();
+    when(orderService.requestCancellation(any())).thenThrow(new PaymentServiceNotAvailableException());
 
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/cancellation")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().is5xxServerError())
+        .andExpect(content().string(containsString("Payment service is not available now.")));
+  }
 }

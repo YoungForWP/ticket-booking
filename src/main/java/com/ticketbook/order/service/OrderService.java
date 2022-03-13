@@ -2,7 +2,9 @@ package com.ticketbook.order.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ticketbook.order.infrastructure.client.FlightClientImpl;
+import com.ticketbook.order.infrastructure.client.PaymentClient;
 import com.ticketbook.order.infrastructure.client.SqsClient;
+import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.CancellationConfirmationRepository;
@@ -23,6 +25,7 @@ import com.ticketbook.order.service.exception.OrderNotPaidException;
 import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
 import com.ticketbook.order.service.exception.TicketIsInAlterationProcessingException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpServerErrorException;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -46,6 +49,8 @@ public class OrderService {
 
   private final SqsClient sqsClient;
 
+  private final PaymentClient paymentClient;
+
   public OrderService(
       TicketRepository ticketRepository,
       InvoiceRequestRepository invoiceRequestRepository,
@@ -54,7 +59,8 @@ public class OrderService {
       AlternationConfirmationRepository alternationConfirmationRepository,
       AlternationRequestRepository alternationRequestRepository,
       FlightClientImpl flightClient,
-      SqsClient sqsClient) {
+      SqsClient sqsClient,
+      PaymentClient paymentClient) {
     this.ticketRepository = ticketRepository;
     this.invoiceRequestRepository = invoiceRequestRepository;
     this.cancellationConfirmationRepository = cancellationConfirmationRepository;
@@ -63,6 +69,7 @@ public class OrderService {
     this.alternationRequestRepository = alternationRequestRepository;
     this.flightClient = flightClient;
     this.sqsClient = sqsClient;
+    this.paymentClient = paymentClient;
   }
 
   public UUID requestInvoice(InvoiceRequest request) throws JsonProcessingException {
@@ -83,6 +90,12 @@ public class OrderService {
     checkNoCancellationConfirmation(ticket.getId());
     checkOrderIsPaid(request.getOrderId());
     checkTicketIsInAlteration(ticket.getId());
+
+    try {
+      paymentClient.refund(request);
+    } catch (HttpServerErrorException.ServiceUnavailable error) {
+      throw new PaymentServiceNotAvailableException();
+    }
     return null;
   }
 
