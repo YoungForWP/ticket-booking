@@ -22,7 +22,6 @@ import com.ticketbook.order.model.Flight;
 import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.model.PaymentConfirmation;
 import com.ticketbook.order.model.Ticket;
-import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
 import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
@@ -111,8 +110,9 @@ public class OrderService {
 
   private void checkCanRequestInvoice(Ticket ticket, String orderId) {
     checkFlightIsFinished(ticket.getFlightId());
-    checkTicketIsCancelledOrInCancelledProgress(ticket.getId());
+    checkTicketIsNotCancelledOrInCancelledProgress(ticket.getId());
     checkOrderIsPaid(orderId);
+    checkTicketIsNotInAlteration(ticket.getId());
   }
 
   private void checkCanRequestCancellation(CancellationRequest request) {
@@ -123,7 +123,7 @@ public class OrderService {
   }
 
 
-  private void checkTicketIsCancelledOrInCancelledProgress(String ticketId) {
+  private void checkTicketIsNotCancelledOrInCancelledProgress(String ticketId) {
     CancellationConfirmation confirmation = cancellationConfirmationRepository.getCancellationConfirmation(ticketId);
     if (Objects.nonNull(confirmation) && confirmation.isConfirmed()) {
       throw new TicketIsAlreadyCancelledException(ticketId);

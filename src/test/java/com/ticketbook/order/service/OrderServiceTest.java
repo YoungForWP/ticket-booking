@@ -5,8 +5,6 @@ import com.ticketbook.order.infrastructure.client.FlightClientImpl;
 import com.ticketbook.order.infrastructure.client.PaymentClient;
 import com.ticketbook.order.infrastructure.client.SqsClientImpl;
 import com.ticketbook.order.infrastructure.exception.ConnectionException;
-import com.ticketbook.order.service.exception.ConnectToSqsFailedException;
-import com.ticketbook.order.service.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.CancellationConfirmationRepository;
@@ -21,9 +19,10 @@ import com.ticketbook.order.model.Flight;
 import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.model.PaymentConfirmation;
 import com.ticketbook.order.model.Ticket;
-import com.ticketbook.order.service.exception.FlightIsFinishedException;
+import com.ticketbook.order.service.exception.ConnectToSqsFailedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
+import com.ticketbook.order.service.exception.PaymentServiceNotAvailableException;
 import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
 import com.ticketbook.order.service.exception.TicketIsInAlterationProcessingException;
 import com.ticketbook.order.service.exception.TicketIsInCancellationProcessingException;
@@ -168,6 +167,31 @@ public class OrderServiceTest {
   }
 
   @Test
+  public void requestInvoice_should_throw_exception_when_ticket_is_in_alternation_processing() {
+    String ticketId = "AH597C";
+    String flightId = "6X5CAB";
+    String orderId = "BT1238";
+
+    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
+        .ticketId(ticketId)
+        .orderId(orderId)
+        .email("test@gmail.com")
+        .build();
+
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, true);
+    mockPaymentConfirmation(orderId, true);
+    mockInAlternation(ticketId);
+
+    Throwable exception = assertThrows(
+        TicketIsInAlterationProcessingException.class,
+        () -> orderService.requestInvoice(invoiceRequest)
+    );
+
+    assertEquals(exception.getMessage(), "Ticket with id AH597C is in alternation processing.");
+  }
+
+  @Test
   public void requestInvoice_should_failed_when_error_happened_connect_to_sqs() throws JsonProcessingException {
     String flightId = "9A5F7B";
     String ticketId = "af12f6";
@@ -196,14 +220,17 @@ public class OrderServiceTest {
   public void requestInvoice_should_success_when_flight_is_finished() throws JsonProcessingException {
     String flightId = "9A5F7B";
     String ticketId = "af12f6";
+    String orderId = "ABCD";
 
     InvoiceRequest invoiceRequest = InvoiceRequest.builder()
         .ticketId(ticketId)
+        .orderId(orderId)
         .email("test@gmail.com")
         .build();
 
     mockTicket(ticketId, flightId);
     mockFlight(flightId, true);
+    mockPaymentConfirmation(orderId, true);
 
     UUID requestId = UUID.randomUUID();
     when(invoiceRequestRepository.save(invoiceRequest)).thenReturn(requestId);
@@ -278,8 +305,7 @@ public class OrderServiceTest {
     mockCancellationConfirmation(ticketId, false);
     mockPaymentConfirmation(orderId, true);
 
-    when(alternationConfirmationRepository.getAlternationConfirmation(ticketId)).thenReturn(null);
-    when(alternationRequestRepository.getAlternationRequest(ticketId)).thenReturn(mock(AlternationRequest.class));
+    mockInAlternation(ticketId);
 
     Throwable exception = assertThrows(
         TicketIsInAlterationProcessingException.class,
@@ -364,4 +390,10 @@ public class OrderServiceTest {
     Ticket mockedTicket = Ticket.builder().id(ticketId).flightId(flightId).build();
     when(ticketRepository.getTicket(ticketId)).thenReturn(mockedTicket);
   }
+
+  private void mockInAlternation(String ticketId) {
+    when(alternationConfirmationRepository.getAlternationConfirmation(ticketId)).thenReturn(null);
+    when(alternationRequestRepository.getAlternationRequest(ticketId)).thenReturn(mock(AlternationRequest.class));
+  }
+
 }

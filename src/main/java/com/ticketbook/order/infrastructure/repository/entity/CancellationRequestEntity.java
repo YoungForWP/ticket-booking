@@ -46,7 +46,7 @@ public class CancellationRequestEntity {
   public CancellationRequest toModel() {
     return CancellationRequest
         .builder()
-        .id(UUID.randomUUID())
+        .id(this.getId())
         .amount(this.getAmount())
         .ticketId(this.getTicketId())
         .build();

@@ -1,7 +1,6 @@
 package com.ticketbook.order.infrastructure.repository;
 
 import com.ticketbook.order.infrastructure.helper.DateTimeHelper;
-import com.ticketbook.order.infrastructure.repository.entity.CancellationConfirmationEntity;
 import com.ticketbook.order.infrastructure.repository.entity.CancellationRequestEntity;
 import com.ticketbook.order.model.CancellationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,7 @@ public class CancellationRequestRepositoryImpl implements CancellationRequestRep
     CriteriaQuery<CancellationRequestEntity> query =
         builder.createQuery(CancellationRequestEntity.class);
 
-    Root<CancellationConfirmationEntity> root = query.from(CancellationConfirmationEntity.class);
+    Root<CancellationRequestEntity> root = query.from(CancellationRequestEntity.class);
     query.where(builder.equal(root.get("ticketId"), ticketId));
 
     List<CancellationRequestEntity> resultList =
