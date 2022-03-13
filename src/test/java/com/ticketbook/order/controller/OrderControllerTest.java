@@ -10,6 +10,7 @@ import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
 import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
+import com.ticketbook.order.service.exception.TicketIsInAlterationProcessingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -169,6 +170,19 @@ public class OrderControllerTest {
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest())
         .andExpect(content().string(containsString("Order with id AH597C is not paid.")));
+  }
+
+  @Test
+  public void requestCancellation_should_return_400_when_ticket_is_in_alternation_processing() throws Exception {
+    CancellationRequestDto request = CancellationRequestDto.builder().amount(BigDecimal.valueOf(600)).build();
+
+    when(orderService.requestCancellation(any())).thenThrow(new TicketIsInAlterationProcessingException("af12f6"));
+
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/cancellation")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(containsString("Ticket with id af12f6 is in alternation processing.")));
   }
 
 

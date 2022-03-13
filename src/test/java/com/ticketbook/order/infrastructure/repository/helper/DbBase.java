@@ -1,5 +1,6 @@
 package com.ticketbook.order.infrastructure.repository.helper;
 
+import com.ticketbook.order.infrastructure.repository.entity.AlternationRequestEntity;
 import com.ticketbook.order.infrastructure.repository.entity.CancellationConfirmationEntity;
 import com.ticketbook.order.infrastructure.repository.entity.PaymentConfirmationEntity;
 import com.ticketbook.order.infrastructure.repository.entity.TicketEntity;
@@ -51,4 +52,15 @@ public abstract class DbBase {
     entityManager.persist(confirmation);
   }
 
+  protected void setupAlternationRequest(String ticketId) {
+    AlternationRequestEntity request = AlternationRequestEntity
+        .builder()
+        .id(UUID.fromString("eefa0041-19ce-4fb6-a4e2-131e2e83c06d"))
+        .ticketId(ticketId)
+        .amount(BigDecimal.valueOf(600))
+        .oldFlightId("ABCD")
+        .newFlightId("DGFT")
+        .build();
+    entityManager.persist(request);
+  }
 }

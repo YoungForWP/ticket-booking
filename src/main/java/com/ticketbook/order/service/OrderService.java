@@ -3,10 +3,14 @@ package com.ticketbook.order.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ticketbook.order.infrastructure.client.FlightClientImpl;
 import com.ticketbook.order.infrastructure.client.SqsClient;
+import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
+import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.CancellationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.InvoiceRequestRepository;
 import com.ticketbook.order.infrastructure.repository.PaymentConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.TicketRepository;
+import com.ticketbook.order.model.AlternationConfirmation;
+import com.ticketbook.order.model.AlternationRequest;
 import com.ticketbook.order.model.CancellationConfirmation;
 import com.ticketbook.order.model.CancellationRequest;
 import com.ticketbook.order.model.Flight;
@@ -17,6 +21,7 @@ import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
 import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
+import com.ticketbook.order.service.exception.TicketIsInAlterationProcessingException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -33,6 +38,10 @@ public class OrderService {
 
   private final PaymentConfirmationRepository paymentConfirmationRepository;
 
+  private final AlternationConfirmationRepository alternationConfirmationRepository;
+
+  private final AlternationRequestRepository alternationRequestRepository;
+
   private final FlightClientImpl flightClient;
 
   private final SqsClient sqsClient;
@@ -42,12 +51,16 @@ public class OrderService {
       InvoiceRequestRepository invoiceRequestRepository,
       CancellationConfirmationRepository cancellationConfirmationRepository,
       PaymentConfirmationRepository paymentConfirmationRepository,
+      AlternationConfirmationRepository alternationConfirmationRepository,
+      AlternationRequestRepository alternationRequestRepository,
       FlightClientImpl flightClient,
       SqsClient sqsClient) {
     this.ticketRepository = ticketRepository;
     this.invoiceRequestRepository = invoiceRequestRepository;
     this.cancellationConfirmationRepository = cancellationConfirmationRepository;
     this.paymentConfirmationRepository = paymentConfirmationRepository;
+    this.alternationConfirmationRepository = alternationConfirmationRepository;
+    this.alternationRequestRepository = alternationRequestRepository;
     this.flightClient = flightClient;
     this.sqsClient = sqsClient;
   }
@@ -69,7 +82,20 @@ public class OrderService {
     checkFlightIsNotFinished(ticket.getFlightId());
     checkNoCancellationConfirmation(ticket.getId());
     checkOrderIsPaid(request.getOrderId());
+    checkTicketIsInAlteration(ticket.getId());
     return null;
+  }
+
+  private void checkTicketIsInAlteration(String ticketId) {
+    AlternationConfirmation confirmation = alternationConfirmationRepository.getAlternationConfirmation(ticketId);
+    if (Objects.nonNull(confirmation) && confirmation.isConfirmed()) {
+      return;
+    }
+    AlternationRequest request = alternationRequestRepository.getAlternationRequest(ticketId);
+    if (Objects.nonNull(request)) {
+      throw new TicketIsInAlterationProcessingException(ticketId);
+    }
+
   }
 
   private void checkOrderIsPaid(String orderId) {
