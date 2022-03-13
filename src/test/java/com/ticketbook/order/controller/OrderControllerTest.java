@@ -139,6 +139,19 @@ public class OrderControllerTest {
   }
 
   @Test
+  public void requestInvoice_should_return_400_when_order_is_not_paid() throws Exception {
+    InvoiceRequestDto request = InvoiceRequestDto.builder().email("test@gmail.com").build();
+
+    when(orderService.requestInvoice(any())).thenThrow(new OrderNotPaidException("AH597C"));
+
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/invoice")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(containsString("Order with id AH597C is not paid.")));
+  }
+
+  @Test
   public void requestInvoice_should_return_201_when_all_good() throws Exception {
     InvoiceRequestDto request = InvoiceRequestDto.builder().email("test@gmail.com").build();
 

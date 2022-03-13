@@ -80,7 +80,7 @@ public class OrderService {
 
   public UUID requestInvoice(InvoiceRequest request) throws JsonProcessingException {
     Ticket ticket = ticketRepository.getTicket(request.getTicketId());
-    checkCanRequestInvoice(ticket);
+    checkCanRequestInvoice(ticket, request.getOrderId());
 
     InvoiceRequest invoiceRequest = request.toBuilder().amount(ticket.getActuallyPaid()).build();
     UUID invoiceRequestId = invoiceRequestRepository.save(invoiceRequest);
@@ -103,9 +103,10 @@ public class OrderService {
     return requestId;
   }
 
-  private void checkCanRequestInvoice(Ticket ticket) {
+  private void checkCanRequestInvoice(Ticket ticket, String orderId) {
     checkFlightIsFinished(ticket.getFlightId());
     checkTicketIsCancelledOrInCancelledProgress(ticket.getId());
+    checkOrderIsPaid(orderId);
   }
 
   private void checkCanRequestCancellation(CancellationRequest request) {
@@ -143,7 +144,7 @@ public class OrderService {
 
   private void checkOrderIsPaid(String orderId) {
     PaymentConfirmation paymentConfirmation = paymentConfirmationRepository.getPaymentConfirmation(orderId);
-    if (Objects.nonNull(paymentConfirmation) && !paymentConfirmation.isConfirmed()) {
+    if (Objects.isNull(paymentConfirmation) || !paymentConfirmation.isConfirmed()) {
       throw new OrderNotPaidException(orderId);
     }
   }

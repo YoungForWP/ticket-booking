@@ -132,7 +132,6 @@ public class OrderServiceTest {
     mockTicket(ticketId, flightId);
     mockFlight(flightId, true);
     mockCancellationConfirmation(ticketId, false);
-    mockCancellationConfirmation(ticketId, false);
     mockCancellationRequest(ticketId);
 
     Throwable exception = assertThrows(
@@ -141,6 +140,29 @@ public class OrderServiceTest {
     );
 
     assertEquals(exception.getMessage(), "Ticket with id AH597C is in cancellation processing.");
+  }
+
+  @Test
+  public void requestInvoice_should_throw_exception_when_order_is_not_paid() {
+    String ticketId = "AH597C";
+    String flightId = "6X5CAB";
+    String orderId = "BT1238";
+
+    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
+        .ticketId(ticketId)
+        .orderId(orderId)
+        .email("test@gmail.com")
+        .build();
+
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, true);
+
+    Throwable exception = assertThrows(
+        OrderNotPaidException.class,
+        () -> orderService.requestInvoice(invoiceRequest)
+    );
+
+    assertEquals(exception.getMessage(), "Order with id BT1238 is not paid.");
   }
 
   @Test
