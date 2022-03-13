@@ -90,21 +90,24 @@ public class OrderService {
   }
 
   public UUID requestCancellation(CancellationRequest request) {
+    checkCanRequestCancellation(request);
+    UUID requestId = cancellationRequestRepository.save(request);
+
+    try {
+      paymentClient.refund(request.toBuilder().id(requestId).build());
+    } catch (HttpServerErrorException error) {
+      throw new PaymentServiceNotAvailableException();
+    }
+
+    return requestId;
+  }
+
+  private void checkCanRequestCancellation(CancellationRequest request) {
     Ticket ticket = ticketRepository.getTicket(request.getTicketId());
     checkFlightIsNotFinished(ticket.getFlightId());
     checkNoCancellationConfirmation(ticket.getId());
     checkOrderIsPaid(request.getOrderId());
     checkTicketIsInAlteration(ticket.getId());
-
-    UUID requestId = cancellationRequestRepository.save(request);
-
-    try {
-      paymentClient.refund(request.toBuilder().id(requestId).build());
-    } catch (HttpServerErrorException.ServiceUnavailable error) {
-      throw new PaymentServiceNotAvailableException();
-    }
-
-    return requestId;
   }
 
   private void checkTicketIsInAlteration(String ticketId) {
