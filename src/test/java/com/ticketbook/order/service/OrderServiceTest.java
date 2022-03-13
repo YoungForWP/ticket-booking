@@ -24,6 +24,7 @@ import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
 import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
 import com.ticketbook.order.service.exception.TicketIsInAlterationProcessingException;
+import com.ticketbook.order.service.exception.TicketIsInCancellationProcessingException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -95,6 +96,51 @@ public class OrderServiceTest {
     );
 
     assertEquals(exception.getMessage(), "Flight with id 6X5CAB is not finished.");
+  }
+
+  @Test
+  public void requestInvoice_should_throw_exception_ticket_has_been_cancelled() {
+    String ticketId = "AH597C";
+    String flightId = "6X5CAB";
+
+    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
+        .ticketId(ticketId)
+        .email("test@gmail.com")
+        .build();
+
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, true);
+    mockCancellationConfirmation(ticketId, true);
+
+    Throwable exception = assertThrows(
+        TicketIsAlreadyCancelledException.class, () -> orderService.requestInvoice(invoiceRequest)
+    );
+
+    assertEquals(exception.getMessage(), "Ticket with id AH597C is already cancelled.");
+  }
+
+  @Test
+  public void requestInvoice_should_throw_exception_ticket_in_cancellation_processing() {
+    String ticketId = "AH597C";
+    String flightId = "6X5CAB";
+
+    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
+        .ticketId(ticketId)
+        .email("test@gmail.com")
+        .build();
+
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, true);
+    mockCancellationConfirmation(ticketId, false);
+    mockCancellationConfirmation(ticketId, false);
+    mockCancellationRequest(ticketId);
+
+    Throwable exception = assertThrows(
+        TicketIsInCancellationProcessingException.class,
+        () -> orderService.requestInvoice(invoiceRequest)
+    );
+
+    assertEquals(exception.getMessage(), "Ticket with id AH597C is in cancellation processing.");
   }
 
   @Test
@@ -273,6 +319,11 @@ public class OrderServiceTest {
     CancellationConfirmation cancellationConfirmation = CancellationConfirmation.builder().confirmed(confirmed).build();
     when(cancellationConfirmationRepository.getCancellationConfirmation(ticketId))
         .thenReturn(cancellationConfirmation);
+  }
+
+  private void mockCancellationRequest(String ticketId) {
+    CancellationRequest request = CancellationRequest.builder().ticketId(ticketId).build();
+    when(cancellationRequestRepository.get(ticketId)).thenReturn(request);
   }
 
   private void mockFlight(String flightId, boolean finished) {

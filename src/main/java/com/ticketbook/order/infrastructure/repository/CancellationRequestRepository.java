@@ -8,4 +8,6 @@ public interface CancellationRequestRepository {
 
   UUID save(CancellationRequest request);
 
+  CancellationRequest get(String ticketId);
+
 }

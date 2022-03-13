@@ -41,4 +41,22 @@ public class CancellationRequestRepositoryImplTest extends DbBase {
 
     assertEquals(entity, expected);
   }
+
+  @Test
+  @Transactional
+  public void get_should_get_request_from_db() {
+    String ticketId = "FTY78";
+    setupCancellationRequest(ticketId);
+
+    CancellationRequest request = requestRepository.get(ticketId);
+
+    CancellationRequest expected = CancellationRequest
+        .builder()
+        .id(UUID.fromString("eefa0041-19ce-4fb6-a4e2-131e2e83c06d"))
+        .ticketId(ticketId)
+        .amount(BigDecimal.valueOf(600))
+        .build();
+
+    assertEquals(request, expected);
+  }
 }

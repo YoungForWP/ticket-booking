@@ -2,6 +2,7 @@ package com.ticketbook.order.infrastructure.repository.helper;
 
 import com.ticketbook.order.infrastructure.repository.entity.AlternationRequestEntity;
 import com.ticketbook.order.infrastructure.repository.entity.CancellationConfirmationEntity;
+import com.ticketbook.order.infrastructure.repository.entity.CancellationRequestEntity;
 import com.ticketbook.order.infrastructure.repository.entity.PaymentConfirmationEntity;
 import com.ticketbook.order.infrastructure.repository.entity.TicketEntity;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,16 @@ public abstract class DbBase {
         .amount(BigDecimal.valueOf(600))
         .oldFlightId("ABCD")
         .newFlightId("DGFT")
+        .build();
+    entityManager.persist(request);
+  }
+
+  protected void setupCancellationRequest(String ticketId) {
+    CancellationRequestEntity request = CancellationRequestEntity
+        .builder()
+        .id(UUID.fromString("eefa0041-19ce-4fb6-a4e2-131e2e83c06d"))
+        .ticketId(ticketId)
+        .amount(BigDecimal.valueOf(600))
         .build();
     entityManager.persist(request);
   }

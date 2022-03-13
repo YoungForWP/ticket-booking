@@ -25,6 +25,7 @@ import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
 import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
 import com.ticketbook.order.service.exception.TicketIsInAlterationProcessingException;
+import com.ticketbook.order.service.exception.TicketIsInCancellationProcessingException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -79,7 +80,7 @@ public class OrderService {
 
   public UUID requestInvoice(InvoiceRequest request) throws JsonProcessingException {
     Ticket ticket = ticketRepository.getTicket(request.getTicketId());
-    checkFlightIsFinished(ticket.getFlightId());
+    checkCanRequestInvoice(ticket);
 
     InvoiceRequest invoiceRequest = request.toBuilder().amount(ticket.getActuallyPaid()).build();
     UUID invoiceRequestId = invoiceRequestRepository.save(invoiceRequest);
@@ -102,12 +103,30 @@ public class OrderService {
     return requestId;
   }
 
+  private void checkCanRequestInvoice(Ticket ticket) {
+    checkFlightIsFinished(ticket.getFlightId());
+    checkTicketIsCancelledOrInCancelledProgress(ticket.getId());
+  }
+
   private void checkCanRequestCancellation(CancellationRequest request) {
     Ticket ticket = ticketRepository.getTicket(request.getTicketId());
     checkFlightIsNotFinished(ticket.getFlightId());
     checkNoCancellationConfirmation(ticket.getId());
     checkOrderIsPaid(request.getOrderId());
     checkTicketIsInAlteration(ticket.getId());
+  }
+
+
+  private void checkTicketIsCancelledOrInCancelledProgress(String ticketId) {
+    CancellationConfirmation confirmation = cancellationConfirmationRepository.getCancellationConfirmation(ticketId);
+    if (Objects.nonNull(confirmation) && confirmation.isConfirmed()) {
+      throw new TicketIsAlreadyCancelledException(ticketId);
+    }
+
+    CancellationRequest request = cancellationRequestRepository.get(ticketId);
+    if (Objects.nonNull(request)) {
+      throw new TicketIsInCancellationProcessingException(ticketId);
+    }
   }
 
   private void checkTicketIsInAlteration(String ticketId) {

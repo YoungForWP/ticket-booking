@@ -13,6 +13,7 @@ import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import com.ticketbook.order.service.exception.OrderNotPaidException;
 import com.ticketbook.order.service.exception.TicketIsAlreadyCancelledException;
 import com.ticketbook.order.service.exception.TicketIsInAlterationProcessingException;
+import com.ticketbook.order.service.exception.TicketIsInCancellationProcessingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -112,17 +113,37 @@ public class OrderControllerTest {
   }
 
   @Test
+  public void requestInvoice_should_return_400_when_ticket_is_cancelled() throws Exception {
+    InvoiceRequestDto request = InvoiceRequestDto.builder().email("test@gmail.com").build();
+
+    when(orderService.requestInvoice(any())).thenThrow(new TicketIsAlreadyCancelledException("6X5CAB"));
+
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/invoice")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(containsString("Ticket with id 6X5CAB is already cancelled.")));
+  }
+
+  @Test
+  public void requestInvoice_should_return_400_when_ticket_is_in_cancellation_processing() throws Exception {
+    InvoiceRequestDto request = InvoiceRequestDto.builder().email("test@gmail.com").build();
+
+    when(orderService.requestInvoice(any())).thenThrow(new TicketIsInCancellationProcessingException("6X5CAB"));
+
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/invoice")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(containsString("Ticket with id 6X5CAB is in cancellation processing.")));
+  }
+
+  @Test
   public void requestInvoice_should_return_201_when_all_good() throws Exception {
     InvoiceRequestDto request = InvoiceRequestDto.builder().email("test@gmail.com").build();
 
-    InvoiceRequest invoiceRequest = InvoiceRequest.builder()
-        .orderId("AH597C")
-        .ticketId("af12f6")
-        .email("test@gmail.com")
-        .build();
-
     UUID invoiceId = UUID.randomUUID();
-    when(orderService.requestInvoice(invoiceRequest)).thenReturn(invoiceId);
+    when(orderService.requestInvoice(any())).thenReturn(invoiceId);
 
     MvcResult mvcResult = mockMvc.perform(post("/orders/AH597C/tickets/af12f6/invoice")
         .content(objectMapper.writeValueAsString(request))

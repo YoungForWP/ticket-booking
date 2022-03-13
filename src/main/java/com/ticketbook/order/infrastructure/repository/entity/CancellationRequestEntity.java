@@ -35,4 +35,13 @@ public class CancellationRequestEntity {
         .ticketId(request.getTicketId())
         .build();
   }
+
+  public CancellationRequest toModel() {
+    return CancellationRequest
+        .builder()
+        .id(UUID.randomUUID())
+        .amount(this.getAmount())
+        .ticketId(this.getTicketId())
+        .build();
+  }
 }
