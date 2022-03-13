@@ -2,6 +2,7 @@ package com.ticketbook.order.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ticketbook.order.dto.CancellationRequestDto;
+import com.ticketbook.order.dto.CancellationResponseDto;
 import com.ticketbook.order.dto.InvoiceRequestDto;
 import com.ticketbook.order.dto.InvoiceResponseDto;
 import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAvailableException;
@@ -196,5 +197,22 @@ public class OrderControllerTest {
         .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().is5xxServerError())
         .andExpect(content().string(containsString("Payment service is not available now.")));
+  }
+
+  @Test
+  public void requestCancellation_should_return_201_when_all_good() throws Exception {
+    CancellationRequestDto request = CancellationRequestDto.builder().amount(BigDecimal.valueOf(600)).build();
+    UUID requestId = UUID.randomUUID();
+    when(orderService.requestCancellation(any())).thenReturn(requestId);
+
+    MvcResult mvcResult = mockMvc.perform(post("/orders/AH597C/tickets/af12f6/cancellation")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isCreated())
+        .andReturn();
+
+    String response = mvcResult.getResponse().getContentAsString();
+    CancellationResponseDto expected = CancellationResponseDto.builder().cancellationRequestId(requestId).build();
+    assertEquals(response, objectMapper.writeValueAsString(expected));
   }
 }

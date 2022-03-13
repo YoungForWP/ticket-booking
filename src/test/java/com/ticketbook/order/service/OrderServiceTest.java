@@ -8,6 +8,7 @@ import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAva
 import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.CancellationConfirmationRepository;
+import com.ticketbook.order.infrastructure.repository.CancellationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.InvoiceRequestRepository;
 import com.ticketbook.order.infrastructure.repository.PaymentConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.TicketRepository;
@@ -63,6 +64,9 @@ public class OrderServiceTest {
 
   @Mock
   private AlternationConfirmationRepository alternationConfirmationRepository;
+
+  @Mock
+  private CancellationRequestRepository cancellationRequestRepository;
 
   @Mock
   private FlightClientImpl flightClient;
@@ -234,6 +238,30 @@ public class OrderServiceTest {
     );
 
     assertEquals(exception.getMessage(), "Payment service is not available now.");
+  }
+
+  @Test
+  public void requestCancellation_should_succeed_when_all_good() {
+    String ticketId = "AH597C";
+    String flightId = "6X5CAB";
+    String orderId = "AC78F6";
+
+    CancellationRequest cancellationRequest = CancellationRequest.builder()
+        .ticketId(ticketId)
+        .orderId(orderId)
+        .amount(BigDecimal.valueOf(600))
+        .build();
+
+    mockTicket(ticketId, flightId);
+    mockFlight(flightId, false);
+    mockCancellationConfirmation(ticketId, false);
+    mockPaymentConfirmation(orderId, true);
+    UUID requestId = UUID.randomUUID();
+    when(cancellationRequestRepository.save(any())).thenReturn(requestId);
+
+    UUID result = orderService.requestCancellation(cancellationRequest);
+
+    assertEquals(requestId, result);
   }
 
   private void mockPaymentConfirmation(String orderId, boolean confirmed) {

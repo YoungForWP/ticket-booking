@@ -3,7 +3,6 @@ package com.ticketbook.order.infrastructure.repository;
 import com.ticketbook.order.infrastructure.repository.entity.CancellationConfirmationEntity;
 import com.ticketbook.order.model.CancellationConfirmation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;

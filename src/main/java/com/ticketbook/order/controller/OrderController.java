@@ -2,6 +2,7 @@ package com.ticketbook.order.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ticketbook.order.dto.CancellationRequestDto;
+import com.ticketbook.order.dto.CancellationResponseDto;
 import com.ticketbook.order.dto.InvoiceRequestDto;
 import com.ticketbook.order.dto.InvoiceResponseDto;
 import com.ticketbook.order.model.CancellationRequest;
@@ -42,13 +43,13 @@ public class OrderController {
 
   @ResponseStatus(code = HttpStatus.CREATED)
   @PostMapping("/{id}/tickets/{tid}/cancellation")
-  public String requestCancellation(
+  public CancellationResponseDto requestCancellation(
       @PathVariable("id") String orderId,
       @PathVariable("tid") String ticketId,
       @RequestBody CancellationRequestDto cancellationRequestDto
   )  {
     CancellationRequest cancellationRequest = CancellationRequestDto.toModel(cancellationRequestDto, orderId, ticketId);
-    orderService.requestCancellation(cancellationRequest);
-    return null;
+    UUID requestId = orderService.requestCancellation(cancellationRequest);
+    return CancellationResponseDto.builder().cancellationRequestId(requestId).build();
   }
 }

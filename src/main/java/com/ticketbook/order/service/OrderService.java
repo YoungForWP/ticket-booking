@@ -8,6 +8,7 @@ import com.ticketbook.order.infrastructure.client.exception.PaymentServiceNotAva
 import com.ticketbook.order.infrastructure.repository.AlternationConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.AlternationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.CancellationConfirmationRepository;
+import com.ticketbook.order.infrastructure.repository.CancellationRequestRepository;
 import com.ticketbook.order.infrastructure.repository.InvoiceRequestRepository;
 import com.ticketbook.order.infrastructure.repository.PaymentConfirmationRepository;
 import com.ticketbook.order.infrastructure.repository.TicketRepository;
@@ -45,6 +46,8 @@ public class OrderService {
 
   private final AlternationRequestRepository alternationRequestRepository;
 
+  private final CancellationRequestRepository cancellationRequestRepository;
+
   private final FlightClientImpl flightClient;
 
   private final SqsClient sqsClient;
@@ -58,6 +61,7 @@ public class OrderService {
       PaymentConfirmationRepository paymentConfirmationRepository,
       AlternationConfirmationRepository alternationConfirmationRepository,
       AlternationRequestRepository alternationRequestRepository,
+      CancellationRequestRepository cancellationRequestRepository,
       FlightClientImpl flightClient,
       SqsClient sqsClient,
       PaymentClient paymentClient) {
@@ -67,6 +71,7 @@ public class OrderService {
     this.paymentConfirmationRepository = paymentConfirmationRepository;
     this.alternationConfirmationRepository = alternationConfirmationRepository;
     this.alternationRequestRepository = alternationRequestRepository;
+    this.cancellationRequestRepository = cancellationRequestRepository;
     this.flightClient = flightClient;
     this.sqsClient = sqsClient;
     this.paymentClient = paymentClient;
@@ -91,12 +96,15 @@ public class OrderService {
     checkOrderIsPaid(request.getOrderId());
     checkTicketIsInAlteration(ticket.getId());
 
+    UUID requestId = cancellationRequestRepository.save(request);
+
     try {
-      paymentClient.refund(request);
+      paymentClient.refund(request.toBuilder().id(requestId).build());
     } catch (HttpServerErrorException.ServiceUnavailable error) {
       throw new PaymentServiceNotAvailableException();
     }
-    return null;
+
+    return requestId;
   }
 
   private void checkTicketIsInAlteration(String ticketId) {
