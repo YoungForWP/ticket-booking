@@ -1,10 +1,12 @@
 package com.ticketbook.order.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ticketbook.order.dto.CancellationRequestDto;
 import com.ticketbook.order.dto.InvoiceRequestDto;
 import com.ticketbook.order.dto.InvoiceResponseDto;
 import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.service.OrderService;
+import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,10 +22,12 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -124,6 +128,19 @@ public class OrderControllerTest {
     String response = mvcResult.getResponse().getContentAsString();
     InvoiceResponseDto expected = InvoiceResponseDto.builder().invoiceRequestId(invoiceId).build();
     assertEquals(response, objectMapper.writeValueAsString(expected));
+  }
+
+  @Test
+  public void requestCancellation_should_return_400_when_flight_is_finished() throws Exception {
+    CancellationRequestDto request = CancellationRequestDto.builder().amount(BigDecimal.valueOf(600)).build();
+
+    when(orderService.requestCancellation(any())).thenThrow(new FlightIsFinishedException("9A5F7B"));
+
+    mockMvc.perform(post("/orders/AH597C/tickets/af12f6/cancellation")
+        .content(objectMapper.writeValueAsString(request))
+        .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isBadRequest())
+        .andExpect(content().string(containsString("Flight with id 9A5F7B is finished.")));
   }
 
 }

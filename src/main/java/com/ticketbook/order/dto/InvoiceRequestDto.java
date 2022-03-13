@@ -1,5 +1,6 @@
 package com.ticketbook.order.dto;
 
+import com.ticketbook.order.model.InvoiceRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,14 @@ public class InvoiceRequestDto {
       message = "The email is invalid."
   )
   private String email;
+
+  public static InvoiceRequest toModel(InvoiceRequestDto invoiceRequestDto,
+                                       String orderId,
+                                       String ticketId) {
+    return InvoiceRequest.builder()
+        .email(invoiceRequestDto.getEmail())
+        .orderId(orderId)
+        .ticketId(ticketId)
+        .build();
+  }
 }

@@ -5,9 +5,11 @@ import com.ticketbook.order.infrastructure.client.FlightClientImpl;
 import com.ticketbook.order.infrastructure.client.SqsClient;
 import com.ticketbook.order.infrastructure.repository.InvoiceRequestRepository;
 import com.ticketbook.order.infrastructure.repository.TicketRepository;
+import com.ticketbook.order.model.CancellationRequest;
 import com.ticketbook.order.model.Flight;
 import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.model.Ticket;
+import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +49,21 @@ public class OrderService {
     return invoiceRequestId;
   }
 
+  public UUID requestCancellation(CancellationRequest request) {
+    Ticket ticket = ticketRepository.getTicketById(request.getTicketId());
+
+    checkFlightIsNotFinished(ticket);
+    return null;
+  }
+
+  private void checkFlightIsNotFinished(Ticket ticket) {
+    Flight flight = flightClient.getFlight(ticket.getFlightId());
+
+    if (flight.isFinished()) {
+      throw new FlightIsFinishedException(flight.getId());
+    }
+  }
+
   private void checkFlightIsFinished(Ticket ticket) {
     Flight flight = flightClient.getFlight(ticket.getFlightId());
 
@@ -54,5 +71,4 @@ public class OrderService {
       throw new FlightIsNotFinishedException(flight.getId());
     }
   }
-
 }

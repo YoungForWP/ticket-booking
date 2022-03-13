@@ -1,8 +1,10 @@
 package com.ticketbook.order.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.ticketbook.order.dto.CancellationRequestDto;
 import com.ticketbook.order.dto.InvoiceRequestDto;
 import com.ticketbook.order.dto.InvoiceResponseDto;
+import com.ticketbook.order.model.CancellationRequest;
 import com.ticketbook.order.model.InvoiceRequest;
 import com.ticketbook.order.service.OrderService;
 import org.springframework.http.HttpStatus;
@@ -33,14 +35,20 @@ public class OrderController {
       @PathVariable("tid") String ticketId,
       @RequestBody @Valid InvoiceRequestDto invoiceRequestDTO
   ) throws JsonProcessingException {
-    InvoiceRequest request = InvoiceRequest
-        .builder()
-        .orderId(orderId)
-        .ticketId(ticketId)
-        .email(invoiceRequestDTO.getEmail())
-        .build();
-
+    InvoiceRequest request = InvoiceRequestDto.toModel(invoiceRequestDTO, orderId, ticketId);
     UUID requestId = orderService.requestInvoice(request);
     return InvoiceResponseDto.builder().invoiceRequestId(requestId).build();
+  }
+
+  @ResponseStatus(code = HttpStatus.CREATED)
+  @PostMapping("/{id}/tickets/{tid}/cancellation")
+  public String requestCancellation(
+      @PathVariable("id") String orderId,
+      @PathVariable("tid") String ticketId,
+      @RequestBody CancellationRequestDto cancellationRequestDto
+  )  {
+    CancellationRequest cancellationRequest = CancellationRequestDto.toModel(cancellationRequestDto, orderId, ticketId);
+    orderService.requestCancellation(cancellationRequest);
+    return null;
   }
 }

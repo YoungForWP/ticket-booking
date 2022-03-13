@@ -17,12 +17,22 @@ public class FlightClientImplTest extends MockServerBase {
   private final FlightClientImpl flightClient = new FlightClientImpl(flightUrl, restClient);
 
   @Test
-  public void getFlight_should_return_flight_info_when_get_flight() throws JsonProcessingException {
+  public void getFlight_should_return_flight_info_when_get_flight_with_flight_not_finished() throws JsonProcessingException {
     mockFlightServer("6X5CAB", false);
 
     Flight flight = flightClient.getFlight("6X5CAB");
 
     Flight expectedFlight = Flight.builder().id("6X5CAB").finished(false).build();
+    assertEquals(flight, expectedFlight);
+  }
+
+  @Test
+  public void getFlight_should_return_flight_info_when_get_flight_with_flight_is_finished() throws JsonProcessingException {
+    mockFlightServer("9A5F7B", true);
+
+    Flight flight = flightClient.getFlight("9A5F7B");
+
+    Flight expectedFlight = Flight.builder().id("9A5F7B").finished(true).build();
     assertEquals(flight, expectedFlight);
   }
 }

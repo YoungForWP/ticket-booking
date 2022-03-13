@@ -1,6 +1,7 @@
 package com.ticketbook.order.controller;
 
 import com.ticketbook.order.dto.ErrorDetail;
+import com.ticketbook.order.service.exception.FlightIsFinishedException;
 import com.ticketbook.order.service.exception.FlightIsNotFinishedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,7 +14,8 @@ import static com.ticketbook.order.dto.ErrorDetail.buildExceptionResponse;
 @ControllerAdvice
 public class ExceptionController {
 
-  @ExceptionHandler({MethodArgumentNotValidException.class, FlightIsNotFinishedException.class})
+  @ExceptionHandler({MethodArgumentNotValidException.class,
+      FlightIsNotFinishedException.class, FlightIsFinishedException.class})
   public ResponseEntity<ErrorDetail> handleInvalidInputException(
       Exception exception
   ) {
